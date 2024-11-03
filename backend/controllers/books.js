@@ -135,12 +135,9 @@ exports.deleteBooks = (req, res, next) => {
       if (existingRating) {
         return res.status(400).json({ error: "Vous avez déjà noté ce livre." });
       }
-      const newRating = {
-        userId: userId, grade: req.body.rating };
-      ratings.push(newRating);
       
       book.ratings = [...book.ratings, {userId, grade: rating }]
-      //book.ratings.push({ userId, grade: rating });
+      
   
       // Calcule la nouvelle moyenne
       const totalRatings = book.ratings.reduce((sum, rate) => sum + rate.grade, 0);
