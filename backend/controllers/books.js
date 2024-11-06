@@ -1,30 +1,44 @@
-const fs = require('fs');
-const Books = require('../models/Books');
+const sharp = require("sharp");
+const path = require("path");
+const fs = require("fs");
 
-exports.createBooks = (req, res, next) => {
+
+
+exports.createBooks = async (req, res, next) => {
   const booksObject = JSON.parse(req.body.book);
   delete booksObject._id;
   delete booksObject._userId;
 
-  console.log(booksObject);
-  
-  const books = new Books({
-      ...booksObject,
-      userId : req.auth.userId,
-      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-  });
+  try {
+    // Chemin de l'image uploadée par Multer
+    const originalImagePath = req.file.path;
+    // Définir le chemin de l'image optimisée
+    const optimizedImagePath = `images/optimized-${req.file.filename}`;
 
-  books.save()
-  .then(() => { res.status(201).json({
-        message: 'Book saved successfully!'
-      });
-    }
-  ).catch((error) => {res.status(400).json({
-        error: error
-      });
-    }
-  );
+    // Optimiser l'image avec Sharp
+    await sharp(originalImagePath)
+      .resize({ width: 800 }) // Ajuste la largeur à 800px
+      .jpeg({ quality: 80 })  // Compresse l'image avec une qualité de 80%
+      .toFile(optimizedImagePath); // Sauvegarde l'image optimisée
+
+    // Supprimer l'image d'origine pour libérer de l'espace
+    fs.unlinkSync(originalImagePath);
+
+    // Créer une instance du livre avec le chemin de l'image optimisée
+    const books = new Books({
+      ...booksObject,
+      userId: req.auth.userId,
+      imageUrl: `${req.protocol}://${req.get('host')}/${optimizedImagePath}`
+    });
+
+    // Sauvegarder le livre dans la base de données
+    await books.save();
+    res.status(201).json({ message: 'Book saved successfully!' });
+  } catch (error) {
+    res.status(500).json({ error: "Erreur lors de l'optimisation de l'image." });
+  }
 };
+
 
 
 exports.getOneBooks = (req, res, next) => {
