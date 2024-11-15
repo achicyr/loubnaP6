@@ -1,6 +1,7 @@
 const sharp = require("sharp");
 const path = require("path");
 const fs = require("fs");
+const  Books = require ('../models/Books')
 
 
 
@@ -81,7 +82,9 @@ exports.modifyBooks = (req, res, next) => {
   
 
 exports.deleteBooks = (req, res, next) => {
+  
   Books.findOne({ _id: req.params.id})
+  
       .then(books => {
           if (books.userId != req.auth.userId) {
               res.status(401).json({message: 'Not authorized'});

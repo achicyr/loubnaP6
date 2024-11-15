@@ -2,12 +2,15 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose');
+require('dotenv').config()
 
 const booksRoutes = require ('./routes/books')
 const userRoutes  = require ('./routes/user')
 const path = require('path');
 
-mongoose.connect('process.env.mongodb',)
+console.log(process.env.PORT)
+
+mongoose.connect(process.env.mongodb)
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
